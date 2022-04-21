@@ -1,8 +1,8 @@
-using TeamViewerUpload.Models;
+using DOCToolBackend.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 
-namespace TeamViewerUpload.Services;
+namespace DOCToolBackend.Services;
 
 public static class TeamViewerService
 {

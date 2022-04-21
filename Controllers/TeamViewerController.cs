@@ -1,9 +1,9 @@
-using TeamViewerUpload.Models;
-using TeamViewerUpload.Services;
+using DOCToolBackend.Models;
+using DOCToolBackend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 
-namespace TeamViewerUpload.Controllers;
+namespace DOCToolBackend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
