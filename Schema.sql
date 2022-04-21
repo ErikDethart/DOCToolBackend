@@ -1,0 +1,5 @@
+-- SQLite
+CREATE TABLE IF NOT EXISTS TeamViewerIDS(
+    HostName TEXT NOT NULL PRIMARY KEY,
+    TeamViewerID TEXT NOT NULL
+);
