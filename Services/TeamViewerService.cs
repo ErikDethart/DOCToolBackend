@@ -15,8 +15,11 @@ namespace DOCToolBackend.Services {
         }
 
         // <summary>
-        // Retrieves all TeamViewerIDS rows from DB and 
+        // Retrieves all TeamViewerIDS rows from DB and returns them as a list.
         // </summmary>
+        // <exceptions>
+        // SqliteException : db problem
+        // </exceptions>
         public static List<TeamViewer> GetAll() {
             List <TeamViewer> teamViewers = new List<TeamViewer>();
             using (var connection = new SqliteConnection("Data Source=" + dbPath)) {
@@ -28,19 +31,14 @@ namespace DOCToolBackend.Services {
                     SELECT * FROM TeamViewerIDS;
                 ";
 
-                try {
-                    using (var reader = command.ExecuteReader()) {
-                        while(reader.Read()) {
-                            TeamViewer teamViewer = new TeamViewer();
-                            teamViewer.HostName = reader.GetString(0);
-                            teamViewer.TeamViewerID = reader.GetString(1);
-                            teamViewers.Add(teamViewer);
-                        }
+                using (var reader = command.ExecuteReader()) {
+                    while(reader.Read()) {
+                        TeamViewer teamViewer = new TeamViewer();
+                        teamViewer.HostName = reader.GetString(0);
+                        teamViewer.TeamViewerID = reader.GetString(1);
+                        teamViewers.Add(teamViewer);
                     }
-                } catch (SqliteException e) {
-                    throw e;
-                }
-                
+                }                
                 return teamViewers;
             }
         }
