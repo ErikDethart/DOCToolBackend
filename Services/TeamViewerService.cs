@@ -43,7 +43,11 @@ namespace DOCToolBackend.Services {
             }
         }
 
-        public static TeamViewer Get(string hostName) {
+        public static TeamViewer? Get(string? hostName) {
+            if (hostName is null) {
+                return null;
+            }
+
             using (var connection = new SqliteConnection("Data Source=" + dbPath)) {
                 connection.Open();
 
@@ -55,19 +59,15 @@ namespace DOCToolBackend.Services {
                 ";
                 command.Parameters.AddWithValue("$HostName", hostName);
 
-                try {
-                    using (SqliteDataReader reader = command.ExecuteReader()) {
-                        if(reader.Read()) {
-                            TeamViewer teamViewer = new TeamViewer();
-                            teamViewer.HostName = reader.GetString(0);
-                            teamViewer.TeamViewerID = reader.GetString(1);
-                            return teamViewer;
-                        } else {
-                            throw new System.ArgumentException("Entry not found: " + hostName + " does not exist in db.");
-                        }
+                using (SqliteDataReader reader = command.ExecuteReader()) {
+                    if(reader.Read()) {
+                        TeamViewer teamViewer = new TeamViewer();
+                        teamViewer.HostName = reader.GetString(0);
+                        teamViewer.TeamViewerID = reader.GetString(1);
+                        return teamViewer;
+                    } else {
+                        return null;
                     }
-                } catch (SqliteException e) {
-                    throw e;
                 }
             }
         }

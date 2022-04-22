@@ -23,33 +23,53 @@ namespace DOCToolBackend.Controllers {
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{hostName}")]
         public ActionResult<TeamViewer> Get(string hostName)
         {
             TeamViewer? teamViewer = TeamViewerService.Get(hostName);
 
-            if(teamViewer == null)
+            if(teamViewer == null) {
                 return NotFound();
+            }
 
             return teamViewer;
         }
 
         [HttpPost]
         public IActionResult Create(TeamViewer teamViewer) {
+            if (TeamViewerService.Get(teamViewer.HostName) is not null) {
+                return Conflict();
+            }
+
             try {
                 TeamViewerService.Add(teamViewer);
                 return CreatedAtAction(nameof(Create), new {hostname = teamViewer.HostName}, teamViewer);
             } catch (SqliteException) {
-                return Conflict();
+                return BadRequest();
             }
         }
 
         // PUT action
+        [HttpPut("{hostName}")]
+        public IActionResult Update(string hostName, TeamViewer teamViewer) {
+            if (hostName != teamViewer.HostName) {
+                return BadRequest();
+            }
+            
+            TeamViewer? existingTeamViewer = TeamViewerService.Get(hostName);
+            if (existingTeamViewer is null) {
+                return NotFound();
+            }
+
+            TeamViewerService.Update(teamViewer);
+
+            return NoContent();
+        }
 
         // DELETE action
         [HttpDelete("{hostName}")]
         public IActionResult Delete(string hostName) {
-            var teamViewer = TeamViewerService.Get(hostName);
+            TeamViewer? teamViewer = TeamViewerService.Get(hostName);
 
             if (teamViewer is null) {
                 return NotFound();
