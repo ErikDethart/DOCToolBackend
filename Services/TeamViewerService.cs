@@ -2,15 +2,14 @@ using DOCToolBackend.Models;
 using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace DOCToolBackend.Services {
     public static class TeamViewerService
     {
         static readonly string dbPath;
-        static List<TeamViewer> TeamViewers { get; }
 
         static TeamViewerService() {
-            TeamViewers = new List<TeamViewer> ();
             dbPath = "DOCTool.db";
         }
 
@@ -85,11 +84,7 @@ namespace DOCToolBackend.Services {
                 command.Parameters.AddWithValue("$HostName", teamViewer.HostName);
                 command.Parameters.AddWithValue("$TeamViewerID", teamViewer.TeamViewerID);
 
-                try {
-                    command.ExecuteNonQuery();
-                } catch (SqliteException e) {
-                    throw e;
-                }
+                command.ExecuteNonQuery();
             }
         }
 
@@ -99,16 +94,36 @@ namespace DOCToolBackend.Services {
             if(teamViewer is null)
                 return;
 
-            TeamViewers.Remove(teamViewer);
+            using (var connection = new SqliteConnection("Data Source=" + dbPath)) {
+                var command = connection.CreateCommand();
+                command.CommandText = @"
+                    DELETE FROM TeamViewerIDS
+                    WHERE HostName=$HostName;
+                ";
+                command.Parameters.AddWithValue("$HostName", hostName);
+
+                command.ExecuteNonQuery();
+            }
         }
 
-        public static void Update(TeamViewer teamViewer)
-        {
-            var index = TeamViewers.FindIndex(p => p.HostName == teamViewer.HostName);
-            if(index == -1)
-                return;
+        public static void Update(TeamViewer teamViewer) {
+            TeamViewer? existingTeamViewer = Get(teamViewer.HostName);
 
-            TeamViewers[index] = teamViewer;
+            if (existingTeamViewer is null) {
+                return;
+            }
+
+            using (var connection = new SqliteConnection("Data Source=" + dbPath)) {
+                var command = connection.CreateCommand();
+                command.CommandText = @"
+                    UPDATE TeamViewerIDS
+                    SET TeamViewerID = $TeamViewerID
+                    WHERE HostName = $HostName;
+                ";
+                command.Parameters.AddWithValue("$HostName", teamViewer.HostName);
+
+                command.ExecuteNonQuery();
+            }
         }
     }
 }
