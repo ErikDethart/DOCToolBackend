@@ -32,6 +32,14 @@ namespace DOCToolBackend
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DOCToolBackend", Version = "v1" });
             });
+            services.AddCors(options =>{
+                options.AddPolicy(
+                "CorsPolicy",
+                builder => builder.WithOrigins("http://localhost:4200")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +57,8 @@ namespace DOCToolBackend
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseCors("CorsPolicy");
 
             app.UseEndpoints(endpoints =>
             {

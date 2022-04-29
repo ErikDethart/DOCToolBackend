@@ -95,6 +95,8 @@ namespace DOCToolBackend.Services {
                 return;
 
             using (var connection = new SqliteConnection("Data Source=" + dbPath)) {
+                connection.Open();
+
                 var command = connection.CreateCommand();
                 command.CommandText = @"
                     DELETE FROM TeamViewerIDS
@@ -114,6 +116,8 @@ namespace DOCToolBackend.Services {
             }
 
             using (var connection = new SqliteConnection("Data Source=" + dbPath)) {
+                connection.Open();
+                
                 var command = connection.CreateCommand();
                 command.CommandText = @"
                     UPDATE TeamViewerIDS
