@@ -27,7 +27,7 @@ namespace DOCToolBackend.Services {
                 var command = connection.CreateCommand();
                 command.CommandText = 
                 @"
-                    SELECT * FROM TeamViewerIDS;
+                    SELECT HostName, TeamViewerID, HWID, UserName FROM TeamViewerIDS;
                 ";
 
                 using (var reader = command.ExecuteReader()) {
@@ -35,6 +35,12 @@ namespace DOCToolBackend.Services {
                         TeamViewer teamViewer = new TeamViewer();
                         teamViewer.HostName = reader.GetString(0);
                         teamViewer.TeamViewerID = reader.GetString(1);
+                        if (!reader.IsDBNull(2)) {
+                            teamViewer.HWID = reader.GetString(2);
+                        }
+                        if (!reader.IsDBNull(3)) {
+                            teamViewer.UserName = reader.GetString(3);
+                        }
                         teamViewers.Add(teamViewer);
                     }
                 }                
@@ -53,7 +59,7 @@ namespace DOCToolBackend.Services {
                 var command = connection.CreateCommand();
                 command.CommandText = 
                 @"
-                    SELECT * FROM TeamViewerIDS
+                    SELECT HostName, TeamViewerID, HWID, UserName FROM TeamViewerIDS
                     WHERE HostName=$HostName;
                 ";
                 command.Parameters.AddWithValue("$HostName", hostName);
@@ -63,6 +69,12 @@ namespace DOCToolBackend.Services {
                         TeamViewer teamViewer = new TeamViewer();
                         teamViewer.HostName = reader.GetString(0);
                         teamViewer.TeamViewerID = reader.GetString(1);
+                        if (!reader.IsDBNull(2)) {
+                            teamViewer.HWID = reader.GetString(2);
+                        }
+                        if (!reader.IsDBNull(3)) {
+                            teamViewer.UserName = reader.GetString(3);
+                        }
                         return teamViewer;
                     } else {
                         return null;
@@ -79,10 +91,30 @@ namespace DOCToolBackend.Services {
                 var command = connection.CreateCommand();
                 command.CommandText = 
                 @"
-                    INSERT INTO TeamViewerIDS (HostName, TeamViewerID) VALUES ($HostName, $TeamViewerID)
+                    SELECT HWID FROM HWIWorkstationCache
+                    WHERE AssetTag=$AssetTag;
+                ";
+                command.Parameters.AddWithValue("$AssetTag", "LHI" + teamViewer.HostName.Substring(3));
+
+                using (SqliteDataReader reader = command.ExecuteReader()) {
+                    if(reader.Read()) {
+                        teamViewer.HWID = reader.GetString(0);
+                    }
+                }
+            }
+
+            using (var connection = new SqliteConnection("Data Source=" + dbPath)) {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = 
+                @"
+                    INSERT INTO TeamViewerIDS (HostName, TeamViewerID, HWID, UserName) VALUES ($HostName, $TeamViewerID, $HWID, $UserName)
                 ";
                 command.Parameters.AddWithValue("$HostName", teamViewer.HostName);
                 command.Parameters.AddWithValue("$TeamViewerID", teamViewer.TeamViewerID);
+                command.Parameters.AddWithValue("$HWID", (teamViewer.HWID != null ? teamViewer.HWID : DBNull.Value));
+                command.Parameters.AddWithValue("$UserName", (teamViewer.UserName != null ? teamViewer.UserName : DBNull.Value));
 
                 command.ExecuteNonQuery();
             }
@@ -125,6 +157,7 @@ namespace DOCToolBackend.Services {
                     WHERE HostName = $HostName;
                 ";
                 command.Parameters.AddWithValue("$HostName", teamViewer.HostName);
+                command.Parameters.AddWithValue("$TeamViewerID", teamViewer.TeamViewerID);
 
                 command.ExecuteNonQuery();
             }

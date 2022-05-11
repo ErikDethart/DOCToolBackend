@@ -44,7 +44,8 @@ namespace DOCToolBackend.Controllers {
             try {
                 TeamViewerService.Add(teamViewer);
                 return CreatedAtAction(nameof(Create), new {hostname = teamViewer.HostName}, teamViewer);
-            } catch (SqliteException) {
+            } catch (SqliteException e) {
+                Console.WriteLine(Environment.StackTrace);
                 return BadRequest();
             }
         }
